@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     @Autowired
-    private OrderRepository repository;
+    private OrderRepository orderRepository;
 
     @Autowired
     private ProductRepository productRepository;
 
     @Transactional(readOnly = true)
     public List<OrderDTO> findAll() {
-        List<Order> list = repository.findOrdersWithProducts();
+        List<Order> list = orderRepository.findOrdersWithProducts();
 
         return list.stream().map(OrderDTO::new).collect(Collectors.toList());
     }
@@ -40,7 +40,17 @@ public class OrderService {
             order.getProducts().add(product);
         }
 
-        order = repository.save(order);
+        order = orderRepository.save(order);
+        return new OrderDTO(order);
+    }
+
+    @Transactional
+    public OrderDTO setDelivered(Long id) {
+        Order order = orderRepository.getOne(id);
+        order.setStatus(OrderStatus.DELIVERED);
+
+        order = orderRepository.save(order);
+
         return new OrderDTO(order);
     }
 }
